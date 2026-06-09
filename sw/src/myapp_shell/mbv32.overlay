@@ -1,0 +1,52 @@
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+    leds {
+        compatible = "gpio-leds";
+
+        led0: led_0 {
+            gpios = <&peripherals_gpio_LEDs 1 GPIO_ACTIVE_HIGH>;
+            label = "LED0";
+        };
+        led1: led_1 {
+            gpios = <&peripherals_gpio_LEDs 5 GPIO_ACTIVE_HIGH>;
+            label = "LED1";
+        };
+    };
+
+    aliases {
+        led0 = &led0;
+        led1 = &led1;
+    };
+
+    chosen {
+        zephyr,sram  = &microblaze_riscv_0_local_memory_dlmb_bram_if_cntlr_memory;
+    };
+};
+
+&peripherals_axi_quad_spi_0 {
+    status = "okay";
+
+    spi_flash0: flash@0 {
+        compatible = "jedec,spi-nor";
+        status = "okay";
+        reg = <0>;
+        /* Start slow for bring-up */
+        spi-max-frequency = <10000000>;
+
+        jedec-id = [20 bb 18];
+        size = <0x1000000>; /* 16 MiB / 128 Mbit */
+    };
+};
+
+&peripherals_axi_ethernetlite_0 {
+    status = "okay";
+    mdio {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        phy0: phy@1 {
+            device_type = "ethernet-phy";
+            reg = <1>;
+        };
+    };
+};

@@ -1,0 +1,20 @@
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+    leds {
+        compatible = "gpio-leds";
+
+        led0: led_0 {
+            gpios = <&peripherals_axi_gpio_0 0 GPIO_ACTIVE_HIGH>;
+            label = "LED0";
+        };
+    };
+
+    aliases {
+        led0 = &led0;
+    };
+
+    chosen {
+        zephyr,sram  = &microblaze_0_local_memory_dlmb_bram_if_cntlr_memory;
+    };
+};

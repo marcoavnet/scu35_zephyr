@@ -1,0 +1,57 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Zephyr: build",
+      "type": "shell",
+      "command": "source ${workspaceFolder}/.vscode/env.sh && west build -b mbv32 ${workspaceFolder}/src/myapp_shell --build-dir $TRD_HOME/sw/bld/myapp_shell",
+      "options": {
+        "executable": "/bin/bash"
+      },
+      "problemMatcher": "$gcc",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Zephyr: clean rebuild",
+      "type": "shell",
+      "command": "source ${workspaceFolder}/.vscode/env.sh && west build -p always -b mbv32 ${workspaceFolder}/src/myapp_shell --build-dir $TRD_HOME/sw/bld/myapp_shell",
+      "options": {
+        "executable": "/bin/bash"
+      },
+      "problemMatcher": "$gcc",
+      "group": "build"
+    },
+    {
+      "label": "Zephyr: menuconfig",
+      "type": "shell",
+      "command": "source ${workspaceFolder}/.vscode/env.sh && west build -t menuconfig --build-dir $TRD_HOME/sw/bld/myapp_shell",
+      "options": {
+        "executable": "/bin/bash"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Zephyr: ram report",
+      "type": "shell",
+      "command": "source ${workspaceFolder}/.vscode/env.sh && west build -t ram_report --build-dir $TRD_HOME/sw/bld/myapp_shell",
+      "options": {
+        "executable": "/bin/bash"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "cmake",
+      "label": "CMake: clean rebuild",
+      "command": "cleanRebuild",
+      "targets": [
+        "[N/A - Select Kit]"
+      ],
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "CMake template clean rebuild task"
+    }
+  ]
+}
