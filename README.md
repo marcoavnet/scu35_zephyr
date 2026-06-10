@@ -34,7 +34,7 @@ source /opt/Xilinx/2025.2/Vivado/settings64.sh
 cd $TRD_HOME/vivado
 ```
 
-**2) generate the project, build the bitstream and export the XSA file for petalinux**
+**2) generate the project, build the bitstream and export the XSA file for Zephyr**
 ```
 make
 ```
@@ -115,9 +115,12 @@ help
 device list
 kernel version
 kernel thread list
+flash read flash@0 0 100
 flash test flash@0 0 0x1000 10
+flash write flash@0 0 0x00000000 0x00000000 0x00000000 0x00000000
 led on
 led off
+eeprom read eeprom0 0 0x100
 ```
 
 # VS Code Integration
