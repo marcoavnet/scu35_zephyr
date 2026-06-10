@@ -289,7 +289,7 @@ proc create_hier_cell_peripherals { parentCell nameHier } {
   set axi_quad_spi_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_quad_spi axi_quad_spi_0 ]
   set_property -dict [list \
     CONFIG.C_FIFO_DEPTH {256} \
-    CONFIG.C_SCK_RATIO {2} \
+    CONFIG.C_SCK_RATIO {4} \
     CONFIG.C_USE_STARTUP {1} \
     CONFIG.C_USE_STARTUP_INT {1} \
   ] $axi_quad_spi_0
