@@ -50,3 +50,19 @@
         };
     };
 };
+
+&peripherals_iic_eeprom {
+    status = "okay";
+
+    eeprom0: eeprom@50 {
+        compatible = "atmel,at24";
+        reg = <0x50>;
+
+        size = <8192>;         /* 64 kbit = 8 KiB */
+        pagesize = <32>;       /* M24C64 page size */
+        address-width = <16>;
+
+        timeout = <5>;
+        status = "okay";
+    };
+};
