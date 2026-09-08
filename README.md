@@ -18,12 +18,13 @@ THE DOCUMENTATION IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
 ```
 export TRD_HOME=$PWD
 export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
-export ZEPHYR_SDK_INSTALL_DIR=$TRD_HOME/sw/tools/zephyr-sdk-0.16.8
+export ZEPHYR_SDK_INSTALL_DIR=$TRD_HOME/sw/dow/zephyr-sdk-0.16.8
+export ZEPHYR_BASE=$TRD_HOME/sw/dow/zephyr
 ```
 
 **2) Source tools:**
 ```
-source /opt/Xilinx/2025.2/Vivado/settings64.sh
+source /opt/Xilinx/2026.1/Vivado/settings64.sh
 ```
 
 
@@ -50,12 +51,12 @@ vitis -s $TRD_HOME/vivado/tools/create_sdt.py --xsa ./prj/scu35_zephyr.xsa --cpu
 
 **1) Clone Zephyr sources and the SDK**
 ```
-mkdir $TRD_HOME/sw/tools && cd $TRD_HOME/sw/tools
+mkdir -p $TRD_HOME/sw/dow && cd $TRD_HOME/sw/dow
+
 wget -qO- https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.16.8/zephyr-sdk-0.16.8_linux-x86_64_minimal.tar.xz | pv | tar -xJ
+
 wget -qO- https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.16.8/toolchain_linux-x86_64_riscv64-zephyr-elf.tar.xz | pv | tar -xJ -C zephyr-sdk-0.16.8/
 
-cd $TRD_HOME/sw/src/
-mkdir kernel && cd kernel
 git clone https://github.com/Xilinx/zephyr-amd.git -b xlnx_rel_v2026.1 zephyr
 ```
 
@@ -64,24 +65,23 @@ git clone https://github.com/Xilinx/zephyr-amd.git -b xlnx_rel_v2026.1 zephyr
 mkdir $TRD_HOME/sw/bld && cd $TRD_HOME/sw/bld
 python3 -m venv zephyr-venv
 source zephyr-venv/bin/activate
-pip install west
 pip install ninja
-pip install -r $TRD_HOME/sw/src/kernel/zephyr/scripts/requirements.txt
+pip install -r $ZEPHYR_BASE/scripts/requirements.txt
 ```
 
 
 **3) Get Zephyr module sources**
 ```
-cd $TRD_HOME/sw/src/kernel
-west init -l zephyr
+cd $ZEPHYR_BASE
+west init -l .
 west update
-cd zephyr
 west lopper-install
 LOPPER_DTC_FLAGS="-b 0 -@" west lopper-command -p microblaze_riscv_0 -s $TRD_HOME/vivado/build/sdt/sdt_platform/export/sdt_platform/hw/sdt/system-top.dts -w .
 ```
 
 **4) Build examples**
 ```
+cd $ZEPHYR_BASE
 west build -p always -b mbv32 samples/hello_world --build-dir $TRD_HOME/sw/bld/hello
 west build -t ram_report --build-dir $TRD_HOME/sw/bld/hello
 
@@ -102,11 +102,17 @@ west build -t ram_report --build-dir $TRD_HOME/sw/bld/myapp_shell
 ```
 xsdb
 connect
-dev -p $TRD_HOME/vivado/build/prj/scu35_zephyr.runs/impl_1/system_wrapper.pdi
+device program $TRD_HOME/vivado/build/prj/scu35_zephyr.runs/impl_1/system_wrapper.pdi
 targets
 target 4
 dow $TRD_HOME/sw/bld/myapp_shell/zephyr/zephyr.elf
 con
+```
+
+# Demo Use
+connect to the first UART 
+```
+tio /dev/ttyUSB1 -b 115200
 ```
 
 # Custom Shell Example Use
