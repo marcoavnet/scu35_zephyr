@@ -5,7 +5,7 @@
         compatible = "gpio-leds";
 
         led0: led_0 {
-            gpios = <&peripherals_gpio_LEDs 0 GPIO_ACTIVE_HIGH>;
+            gpios = <&peripherals_gpio_LEDs 1 GPIO_ACTIVE_HIGH>;
             label = "LED0";
         };
     };
