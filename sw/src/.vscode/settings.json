@@ -1,4 +1,0 @@
-{
-    "editor.renderWhitespace": "all",
-    "C_Cpp.default.compileCommands": "${workspaceFolder}/bld/myapp/compile_commands.json"
-}

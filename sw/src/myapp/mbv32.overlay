@@ -15,6 +15,6 @@
     };
 
     chosen {
-        zephyr,sram  = &microblaze_riscv_0_local_memory_dlmb_bram_if_cntlr_memory;
+        zephyr,sram  = &microblaze_riscv_0_local_memory_dlmb_bram_if_cntlr0_memory;
     };
 };
