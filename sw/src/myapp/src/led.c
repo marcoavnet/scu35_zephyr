@@ -16,6 +16,7 @@ static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 /* LED thread function */
 void led_thread(void *arg1, void *arg2, void *arg3)
 {
+    uint32_t loops = 0;
     if (!gpio_is_ready_dt(&led)) {
         printk("LED device not ready\n");
         return;
@@ -26,5 +27,6 @@ void led_thread(void *arg1, void *arg2, void *arg3)
     while (1) {
         gpio_pin_toggle_dt(&led);
         k_sleep(K_MSEC(50));
+        loops++;
     }
 }
