@@ -14,6 +14,7 @@ Build the Vivado hardware project, generate a system device tree, and build and 
 
 The workshop uses Vivado/Vitis 2026.1, the AMD Zephyr branch `xlnx_rel_v2026.1`, and Zephyr SDK 0.16.8. The Zephyr board target is `mbv32`, and the hardware processor instance is `microblaze_riscv_0`.
 
+
 ## Prerequisites
 
 - A Linux x86-64 host with Bash.
@@ -23,6 +24,59 @@ The workshop uses Vivado/Vitis 2026.1, the AMD Zephyr branch `xlnx_rel_v2026.1`,
 - The workshop project sources and the target board connected for programming and serial access.
 
 Run the following steps in order. Unless a block is explicitly marked as an XSDB or Zephyr shell command, run it in your host terminal.
+
+
+## Design Structure
+
+The project is divided into Zephyr software (`sw`) and Vivado hardware (`vivado`). Generated build files are kept separate from the source files.
+
+```text
+.
+├── sw
+│   ├── bld
+│   ├── dow
+│   └── src
+│       ├── myapp
+│       ├── myapp_net
+│       └── myapp_shell
+└── vivado
+    ├── build
+    ├── sources
+    │   ├── constrs
+    │   └── vhdl
+    ├── tcl
+    └── tools
+```
+
+| Directory                | Description                                                                                                             |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `sw/src`                 | Zephyr application source code, with a separate directory for each application.                                         |
+| `sw/bld`                 | Application build directories containing generated CMake files and build outputs, keeping the source directories clean. |
+| `sw/dow`                 | Downloaded tools, the Zephyr SDK, Zephyr kernel sources, and Zephyr modules.                                            |
+| `vivado/build`           | The Vivado project generated from Tcl scripts, hardware build outputs, and the generated system device tree.            |
+| `vivado/sources/constrs` | Hardware design constraints.                                                                                            |
+| `vivado/sources/vhdl`    | VHDL source files.                                                                                                      |
+| `vivado/tcl`             | Tcl scripts used to create and build the Vivado project.                                                                |
+| `vivado/tools`           | Supporting scripts and utilities for the hardware workflow.                                                             |
+
+
+### Zephyr Application Structure
+
+Each application in `sw/src` contains source code and configuration files that define how it is built and which software and hardware features it uses.
+
+| File             | Purpose                                                                                           | Example changes                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `CMakeLists.txt` | Connects the application to the Zephyr build system and specifies its source files and libraries. | Add a new `.c` file to the build.                                       |
+| `prj.conf`       | Configures Zephyr software features through Kconfig options.                                      | Enable the shell, networking, or logging; adjust thread stack sizes.    |
+| `mbv32.overlay`  | Extends or overrides the board’s devicetree configuration for the application.                    | Enable peripherals, configure GPIOs, or add device aliases.             |
+| `src/main.c`     | Contains the application entry point and application logic.                                       | Create threads, access peripherals, or implement application behaviour. |
+
+For example, using a peripheral typically involves describing or enabling it in the devicetree overlay, enabling its driver through Kconfig where required, and accessing it from the application code.
+
+The overlay changes Zephyr’s description of the hardware; it does not modify the FPGA design.
+
+See the [Zephyr Application Development documentation](https://docs.zephyrproject.org/latest/develop/application/index.html) for more details.
+
 
 ## 1. Set up the environment
 
@@ -122,9 +176,6 @@ LOPPER_DTC_FLAGS="-b 0 -@" west lopper-command \
     -s "$TRD_HOME/vivado/build/sdt/sdt_platform/export/sdt_platform/hw/sdt/system-top.dts" \
     -w .
 ```
-cd $ZEPHYR_BASE
-west build -p always -b mbv32 samples/hello_world --build-dir $TRD_HOME/sw/bld/hello
-west build -t ram_report --build-dir $TRD_HOME/sw/bld/hello
 
 ## 4. Build the applications
 
@@ -141,16 +192,16 @@ Each example uses a separate build directory. The `-p always` option performs a 
 ```bash
 west build -p always -b mbv32 samples/hello_world \
     --build-dir "$TRD_HOME/sw/bld/hello"
+
 west build -t ram_report --build-dir "$TRD_HOME/sw/bld/hello"
 ```
-west build -p always -b mbv32 $TRD_HOME/sw/src/myapp --build-dir $TRD_HOME/sw/bld/my_app
-west build -t ram_report --build-dir $TRD_HOME/sw/bld/my_app
 
 ### Zephyr shell sample
 
 ```bash
 west build -p always -b mbv32 samples/subsys/shell/shell_module/ \
     --build-dir "$TRD_HOME/sw/bld/shell_example"
+
 west build -t ram_report --build-dir "$TRD_HOME/sw/bld/shell_example"
 ```
 
@@ -159,6 +210,7 @@ west build -t ram_report --build-dir "$TRD_HOME/sw/bld/shell_example"
 ```bash
 west build -p always -b mbv32 "$TRD_HOME/sw/src/myapp" \
     --build-dir "$TRD_HOME/sw/bld/my_app"
+
 west build -t ram_report --build-dir "$TRD_HOME/sw/bld/my_app"
 ```
 
@@ -167,10 +219,18 @@ west build -t ram_report --build-dir "$TRD_HOME/sw/bld/my_app"
 ```bash
 west build -p always -b mbv32 "$TRD_HOME/sw/src/myapp_shell" \
     --build-dir "$TRD_HOME/sw/bld/myapp_shell"
+
 west build -t ram_report --build-dir "$TRD_HOME/sw/bld/myapp_shell"
 ```
 
 ## 5. Program the board and run the application
+
+Open the serial console:  
+In a separate host terminal, connect to the board's first UART at 115200 baud. Adjust `/dev/ttyUSB1` to match your system:
+
+```bash
+tio /dev/ttyUSB1 -b 115200
+```
 
 Start XSDB from the terminal where `TRD_HOME` is exported:
 
@@ -198,13 +258,7 @@ con
 
 To run another application, use the `zephyr/zephyr.elf` file from its build directory.
 
-### Open the serial console
 
-In a separate host terminal, connect to the board's first UART at 115200 baud. Adjust `/dev/ttyUSB1` to match your system:
-
-```bash
-tio /dev/ttyUSB1 -b 115200
-```
 
 ### Try the workshop shell commands
 
@@ -240,6 +294,8 @@ flash write flash@0 0 0x00000000 0x00000000 0x00000000 0x00000000
 1. Select **File → Open Folder…** and open `$TRD_HOME/sw`.
 2. Select **Terminal → Run Task… → Zephyr: clean rebuild** to build the application.
 3. Select **Terminal → Run Task… → Zephyr: ram report** to inspect RAM usage.
+4. Select **Terminal → Run Task… → Zephyr: menuconfig** to configure the Zephr kernel.
+
 
 ## Appendix: OpenOCD setup — not working yet
 
